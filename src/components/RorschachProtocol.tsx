@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { GameConfig } from '../types';
 import { generateRorschachData } from '../utils/dataGenerator';
-import PlotGrid from './PlotGrid.tsx';
+import PlotGrid from './PlotGrid';
 
 interface RorschachProtocolProps {
   config: GameConfig;

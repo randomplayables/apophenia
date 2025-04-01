@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { GameConfig } from '../types';
 import { generateLineupData } from '../utils/dataGenerator';
-import PlotGrid from './PlotGrid.tsx';
+import PlotGrid from './PlotGrid';
 
 interface LineupProtocolProps {
   config: GameConfig;

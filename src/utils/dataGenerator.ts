@@ -1,5 +1,6 @@
-import { Dataset, GameConfig, PlotData, DataPoint } from '../types';
-var { jStat } = require('jstat')
+import { Dataset, GameConfig, PlotData } from '../types';
+import { jStat } from 'jstat';
+
 
 // Function to generate a single dataset based on the chosen method
 export function generateDataset(config: GameConfig): Dataset {
@@ -157,7 +158,7 @@ function generateFromFunction(code: string, count: number): Dataset {
   } catch (error) {
     console.error('Error generating data from function:', error);
     // Return some default data in case of error
-    return Array(count).fill(0).map((_, i) => ({
+    return Array(count).fill(0).map((_, _i) => ({
       x: Math.random() * 10,
       y: Math.random() * 10
     }));
