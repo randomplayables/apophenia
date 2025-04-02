@@ -124,16 +124,40 @@ function generateFromDistribution(
 // Helper function to generate data from a user-defined function
 function generateFromFunction(code: string, count: number): Dataset {
   try {
-    // Create a safe sandbox to run the user's code
+    // Create a function that returns whatever the provided code returns
     const generateFunction = new Function('n', `
       "use strict";
       ${code}
       
-      // Call the last function in the code that returns data
-      const fnNames = Object.keys(this).filter(key => typeof this[key] === 'function');
-      if (fnNames.length === 0) throw new Error('No function defined');
-      const fn = this[fnNames[fnNames.length - 1]];
-      return fn(n);
+      // Try to find a function named generateData first (common convention)
+      if (typeof generateData === 'function') {
+        return generateData(n);
+      }
+      
+      // Otherwise look for any function defined in the code
+      const definedFunctions = [];
+      for (const key in this) {
+        if (typeof this[key] === 'function' && this[key].toString().includes('function')) {
+          definedFunctions.push(this[key]);
+        }
+      }
+      
+      // If we found any functions, use the last one
+      if (definedFunctions.length > 0) {
+        return definedFunctions[definedFunctions.length - 1](n);
+      }
+      
+      // If we're here, try to evaluate the code directly
+      // This handles anonymous function expressions
+      const directFunction = (function() { 
+        return eval(code); 
+      })();
+      
+      if (typeof directFunction === 'function') {
+        return directFunction(n);
+      }
+      
+      throw new Error('No function defined or found in the provided code');
     `);
     
     const result = generateFunction.call({}, count);

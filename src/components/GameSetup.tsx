@@ -38,17 +38,22 @@ const GameSetup: React.FC<GameSetupProps> = ({ onSubmit }) => {
   const [selectedDist, setSelectedDist] = useState<Distribution>('norm');
   const [distParams, setDistParams] = useState<Record<string, number>>(defaultParams.norm);
   const [functionCode, setFunctionCode] = useState<string>(
-    `// Write a function that returns an array of {x, y} points
-// Example:
+    `// Define a function named generateData that returns an array of {x, y} points
 function generateData(n) {
   const data = [];
   for (let i = 0; i < n; i++) {
     const x = Math.random() * 10;
+    // Creating a linear relationship with some noise
     const y = 2 * x + 1 + (Math.random() - 0.5) * 2;
     data.push({ x, y });
   }
   return data;
-}`
+}
+
+// The function MUST be named generateData
+// It takes n as a parameter (number of points to generate)
+// And returns an array of objects with x and y properties
+`
   );
 
   const handleDistChange = (dist: Distribution) => {
@@ -180,6 +185,10 @@ function generateData(n) {
             <label className="block text-gray-700 text-sm font-bold mb-2">
               Function Code
             </label>
+            <div className="bg-yellow-50 p-3 rounded mb-2 text-sm">
+              <strong>Important:</strong> You must define a function named <code>generateData</code> that takes
+              a parameter <code>n</code> and returns an array of objects with <code>x</code> and <code>y</code> properties.
+            </div>
             <textarea
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline font-mono"
               rows={10}
