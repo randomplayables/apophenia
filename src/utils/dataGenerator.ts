@@ -1,12 +1,9 @@
 import { Dataset, GameConfig, PlotData } from '../types';
 import { jStat } from 'jstat';
 
-
-// Function to generate a single dataset based on the chosen method
+// Function to generate a single dataset based on the user-defined function
 export function generateDataset(config: GameConfig): Dataset {
-  if (config.method === 'distribution' && config.distConfig) {
-    return generateFromDistribution(config.distConfig.type, config.distConfig.params, config.r);
-  } else if (config.method === 'function' && config.funcConfig) {
+  if (config.method === 'function' && config.funcConfig) {
     return generateFromFunction(config.funcConfig.code, config.r);
   }
   
@@ -29,15 +26,8 @@ export function generateLineupData(config: GameConfig, truePos: number): PlotDat
         isTrue: true
       });
     } else {
-      // For null data, we'll permute the trueData if using function method
-      // or generate a new dataset if using distribution method
-      let nullData: Dataset;
-      
-      if (config.method === 'function') {
-        nullData = permuteData(trueData);
-      } else {
-        nullData = generateDataset(config);
-      }
+      // For null data, we'll permute the trueData
+      const nullData = permuteData(trueData);
       
       datasets.push({
         data: nullData,
@@ -76,58 +66,18 @@ export function generateRorschachData(config: GameConfig, includeTrueData: boole
   return datasets;
 }
 
-// Helper function to generate data from a distribution
-function generateFromDistribution(
-  dist: string, 
-  params: Record<string, number>, 
-  count: number
-): Dataset {
-  const data: Dataset = [];
-  
-  for (let i = 0; i < count; i++) {
-    let x, y;
-    
-  switch (dist) {
-    case 'norm':
-      x = jStat.normal.sample(params.mean, params.sd);
-      y = jStat.normal.sample(params.mean, params.sd);
-      break;
-    case 'unif':
-      x = jStat.uniform.sample(params.min, params.max);
-      y = jStat.uniform.sample(params.min, params.max);
-      break;
-    case 'beta':
-      x = jStat.beta.sample(params.alpha, params.beta);
-      y = jStat.beta.sample(params.alpha, params.beta);
-      break;
-    case 'exp':
-      x = jStat.exponential.sample(params.rate);
-      y = jStat.exponential.sample(params.rate);
-      break;
-    case 't':
-      x = jStat.studentt.sample(params.df);
-      y = jStat.studentt.sample(params.df);
-      break;
-    // Add more distributions as needed
-    default:
-      // Default to normal distribution
-      x = jStat.normal.sample(0, 1);
-      y = jStat.normal.sample(0, 1);
-  }
-  
-  data.push({ x, y });
-}
-  
-  return data;
-}
-
 // Helper function to generate data from a user-defined function
 function generateFromFunction(code: string, count: number): Dataset {
   try {
-    // Create a function that returns whatever the provided code returns
-    const generateFunction = new Function('n', `
-      "use strict";
+    // Prefix the jStat library to the user code
+    const fullCode = `
       ${code}
+    `;
+    
+    // Create a function that returns whatever the provided code returns
+    const generateFunction = new Function('n', 'jStat', `
+      "use strict";
+      ${fullCode}
       
       // Try to find a function named generateData first (common convention)
       if (typeof generateData === 'function') {
@@ -160,7 +110,8 @@ function generateFromFunction(code: string, count: number): Dataset {
       throw new Error('No function defined or found in the provided code');
     `);
     
-    const result = generateFunction.call({}, count);
+    // Pass jStat to the user function
+    const result = generateFunction.call({}, count, jStat);
     
     // Validate the result
     if (!Array.isArray(result)) {
