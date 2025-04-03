@@ -2,20 +2,20 @@ import { Dataset, GameConfig, PlotData } from '../types';
 import { jStat } from 'jstat';
 
 // Function to generate a single dataset based on the user-defined function
-export function generateDataset(config: GameConfig): Dataset {
+export function generateDataset(config: GameConfig, noiseLevel: number): Dataset {
   if (config.method === 'function' && config.funcConfig) {
-    return generateFromFunction(config.funcConfig.code, config.r);
+    return generateFromFunction(config.funcConfig.code, config.r, noiseLevel);
   }
   
   throw new Error('Invalid configuration');
 }
 
 // Generate multiple datasets for the lineup/rorschach protocols
-export function generateLineupData(config: GameConfig, truePos: number): PlotData[] {
+export function generateLineupData(config: GameConfig, truePos: number, noiseLevel: number): PlotData[] {
   const datasets: PlotData[] = [];
   
   // Generate the true dataset first
-  const trueData = generateDataset(config);
+  const trueData = generateDataset(config, noiseLevel);
   
   // Generate n-1 null datasets
   for (let i = 1; i <= config.n; i++) {
@@ -41,13 +41,14 @@ export function generateLineupData(config: GameConfig, truePos: number): PlotDat
 }
 
 export function generateRorschachData(config: GameConfig, includeTrueData: boolean = false, truePos?: number): PlotData[] {
+  const initialNoiseLevel = config.funcConfig?.initialNoiseLevel || 0.5;
   const datasets: PlotData[] = [];
   let numNullDatasets = includeTrueData ? config.n - 1 : config.n;
   
   // Generate the null datasets
   for (let i = 1; i <= numNullDatasets; i++) {
     datasets.push({
-      data: generateDataset(config),
+      data: generateDataset(config, initialNoiseLevel),
       index: i,
       isTrue: false
     });
@@ -55,7 +56,7 @@ export function generateRorschachData(config: GameConfig, includeTrueData: boole
   
   // Add the true dataset if requested
   if (includeTrueData && truePos !== undefined) {
-    const trueData = generateDataset(config);
+    const trueData = generateDataset(config, initialNoiseLevel);
     datasets.splice(truePos - 1, 0, {
       data: trueData,
       index: truePos,
@@ -66,8 +67,31 @@ export function generateRorschachData(config: GameConfig, includeTrueData: boole
   return datasets;
 }
 
+// Helper function to update the noise level based on the user-defined function
+export function updateNoiseLevel(config: GameConfig, currentLevel: number): number {
+  if (config.method === 'function' && config.funcConfig && config.funcConfig.noiseStepCode) {
+    try {
+      const updateFunction = new Function('currentLevel', `
+        "use strict";
+        ${config.funcConfig.noiseStepCode}
+        
+        return updateNoiseLevel(currentLevel);
+      `);
+      
+      return updateFunction(currentLevel);
+    } catch (error) {
+      console.error('Error updating noise level:', error);
+      // Fallback: increase by 10%
+      return currentLevel * 1.1;
+    }
+  }
+  
+  // Default behavior if no noise step function is provided
+  return currentLevel + 0.1;
+}
+
 // Helper function to generate data from a user-defined function
-function generateFromFunction(code: string, count: number): Dataset {
+function generateFromFunction(code: string, count: number, noiseLevel: number): Dataset {
   try {
     // Prefix the jStat library to the user code
     const fullCode = `
@@ -75,13 +99,13 @@ function generateFromFunction(code: string, count: number): Dataset {
     `;
     
     // Create a function that returns whatever the provided code returns
-    const generateFunction = new Function('n', 'jStat', `
+    const generateFunction = new Function('n', 'noiseLevel', 'jStat', `
       "use strict";
       ${fullCode}
       
       // Try to find a function named generateData first (common convention)
       if (typeof generateData === 'function') {
-        return generateData(n);
+        return generateData(n, noiseLevel);
       }
       
       // Otherwise look for any function defined in the code
@@ -94,7 +118,7 @@ function generateFromFunction(code: string, count: number): Dataset {
       
       // If we found any functions, use the last one
       if (definedFunctions.length > 0) {
-        return definedFunctions[definedFunctions.length - 1](n);
+        return definedFunctions[definedFunctions.length - 1](n, noiseLevel);
       }
       
       // If we're here, try to evaluate the code directly
@@ -104,14 +128,14 @@ function generateFromFunction(code: string, count: number): Dataset {
       })();
       
       if (typeof directFunction === 'function') {
-        return directFunction(n);
+        return directFunction(n, noiseLevel);
       }
       
       throw new Error('No function defined or found in the provided code');
     `);
     
     // Pass jStat to the user function
-    const result = generateFunction.call({}, count, jStat);
+    const result = generateFunction.call({}, count, noiseLevel, jStat);
     
     // Validate the result
     if (!Array.isArray(result)) {

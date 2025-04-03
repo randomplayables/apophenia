@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { GameConfig } from '../types';
 import { generateLineupData } from '../utils/dataGenerator';
@@ -8,26 +7,26 @@ interface LineupProtocolProps {
   config: GameConfig;
   truePos: number;
   round: number;
-  totalRounds: number;
+  noiseLevel: number;
   onSelection: (position: number) => void;
 }
 
 const LineupProtocol: React.FC<LineupProtocolProps> = ({ 
   config, 
   truePos, 
-  round, 
-  totalRounds,
+  round,
+  noiseLevel,
   onSelection 
 }) => {
-  const [datasets, setDatasets] = useState(generateLineupData(config, truePos));
+  const [datasets, setDatasets] = useState(generateLineupData(config, truePos, noiseLevel));
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState(true);
 
   // Regenerate datasets when config or truePos changes
   useEffect(() => {
-    setDatasets(generateLineupData(config, truePos));
+    setDatasets(generateLineupData(config, truePos, noiseLevel));
     setSelectedIndex(null);
-  }, [config, truePos]);
+  }, [config, truePos, noiseLevel]);
 
   const handleSelect = (index: number) => {
     setSelectedIndex(index);
@@ -44,7 +43,7 @@ const LineupProtocol: React.FC<LineupProtocolProps> = ({
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Lineup Protocol</h2>
         <div className="text-lg font-semibold">
-          Round {round} of {totalRounds}
+          Round {round} | Noise Level: {noiseLevel.toFixed(2)}
         </div>
       </div>
       
@@ -59,7 +58,8 @@ const LineupProtocol: React.FC<LineupProtocolProps> = ({
             then click "Submit Selection" to confirm.
           </p>
           <p>
-            If you correctly identify the plot with real data, you'll earn a point!
+            Each time you correctly identify the pattern, the difficulty increases!
+            Keep going until you make a mistake - your final score will be how many rounds you survived.
           </p>
           <button 
             className="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-sm"

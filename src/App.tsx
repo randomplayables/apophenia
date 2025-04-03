@@ -5,6 +5,7 @@ import RorschachProtocol from './components/RorschachProtocol.tsx'
 import LineupProtocol from './components/LineupProtocol.tsx'
 import GameResults from './components/GameResults.tsx'
 import { GameConfig, GameState, Protocol } from './types.ts'
+import { updateNoiseLevel } from './utils/dataGenerator.ts'
 
 function App() {
   const [gameState, setGameState] = useState<GameState>({
@@ -13,15 +14,18 @@ function App() {
     protocol: null,
     score: 0,
     roundsPlayed: 0,
-    totalRounds: 10,
+    currentNoiseLevel: 0.5,
     currentTruePos: null
   })
 
   const startGame = (config: GameConfig) => {
+    const initialNoiseLevel = config.funcConfig?.initialNoiseLevel || 0.5;
+    
     setGameState({
       ...gameState,
       stage: 'protocol-selection',
-      config
+      config,
+      currentNoiseLevel: initialNoiseLevel
     })
   }
 
@@ -46,21 +50,27 @@ function App() {
   const handleSelection = (selectedPos: number) => {
     const isCorrect = selectedPos === gameState.currentTruePos
     
-    if (gameState.roundsPlayed + 1 >= gameState.totalRounds) {
+    if (isCorrect) {
+      // Player got it right, increase difficulty
+      const newNoiseLevel = updateNoiseLevel(
+        gameState.config!, 
+        gameState.currentNoiseLevel
+      );
+      
+      // Continue to next round
+      setGameState({
+        ...gameState,
+        score: gameState.score + 1,
+        roundsPlayed: gameState.roundsPlayed + 1,
+        currentNoiseLevel: newNoiseLevel,
+        currentTruePos: Math.floor(Math.random() * gameState.config!.n) + 1
+      })
+    } else {
       // Game over
       setGameState({
         ...gameState,
         stage: 'results',
-        score: isCorrect ? gameState.score + 1 : gameState.score,
         roundsPlayed: gameState.roundsPlayed + 1
-      })
-    } else {
-      // Next round
-      setGameState({
-        ...gameState,
-        score: isCorrect ? gameState.score + 1 : gameState.score,
-        roundsPlayed: gameState.roundsPlayed + 1,
-        currentTruePos: Math.floor(Math.random() * gameState.config!.n) + 1
       })
     }
   }
@@ -72,7 +82,7 @@ function App() {
       protocol: null,
       score: 0,
       roundsPlayed: 0,
-      totalRounds: 10,
+      currentNoiseLevel: 0.5,
       currentTruePos: null
     })
   }
@@ -121,15 +131,16 @@ function App() {
           config={gameState.config}
           truePos={gameState.currentTruePos}
           round={gameState.roundsPlayed + 1}
-          totalRounds={gameState.totalRounds}
+          noiseLevel={gameState.currentNoiseLevel}
           onSelection={handleSelection}
         />
       )}
       
-      {gameState.stage === 'results' && (
+      {gameState.stage === 'results' && gameState.config && (
         <GameResults 
-          score={gameState.score} 
-          totalRounds={gameState.totalRounds}
+          score={gameState.score}
+          initialNoiseLevel={gameState.config.funcConfig?.initialNoiseLevel || 0.5}
+          finalNoiseLevel={gameState.currentNoiseLevel}
           onRestart={restartGame}
         />
       )}

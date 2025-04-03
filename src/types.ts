@@ -4,6 +4,8 @@ export type Protocol = 'rorschach' | 'lineup';
 
 export interface FunctionConfig {
   code: string;
+  noiseStepCode?: string; // New field for noise step function
+  initialNoiseLevel?: number; // Initial noise level
 }
 
 export interface GameConfig {
@@ -13,14 +15,13 @@ export interface GameConfig {
   funcConfig?: FunctionConfig;
 }
 
-// Game state types
 export interface GameState {
   stage: 'setup' | 'protocol-selection' | 'rorschach' | 'lineup' | 'results';
   config: GameConfig | null;
   protocol: Protocol | null;
   score: number;
   roundsPlayed: number;
-  totalRounds: number;
+  currentNoiseLevel: number; // Track current noise level
   currentTruePos: number | null;
 }
 
