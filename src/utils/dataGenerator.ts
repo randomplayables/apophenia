@@ -40,28 +40,47 @@ export function generateLineupData(config: GameConfig, truePos: number, noiseLev
   return datasets;
 }
 
-export function generateRorschachData(config: GameConfig, includeTrueData: boolean = false, truePos?: number): PlotData[] {
+export function generateRorschachData(config: GameConfig, p: number = 0.1): PlotData[] {
   const initialNoiseLevel = config.funcConfig?.initialNoiseLevel || 0.5;
   const datasets: PlotData[] = [];
-  let numNullDatasets = includeTrueData ? config.n - 1 : config.n;
   
-  // Generate the null datasets
-  for (let i = 1; i <= numNullDatasets; i++) {
+  // Generate the true dataset first
+  const trueData = generateDataset(config, initialNoiseLevel);
+  
+  // Determine if we should show the true data
+  const showTrue = Math.random() < p;
+  let n = config.n;
+  
+  if (showTrue) {
+    n = n - 1;
+  }
+  
+  // Generate n null datasets by permuting the true data
+  for (let i = 1; i <= n; i++) {
     datasets.push({
-      data: generateDataset(config, initialNoiseLevel),
+      data: permuteData(trueData),
       index: i,
       isTrue: false
     });
   }
   
-  // Add the true dataset if requested
-  if (includeTrueData && truePos !== undefined) {
-    const trueData = generateDataset(config, initialNoiseLevel);
-    datasets.splice(truePos - 1, 0, {
+  // Add the true dataset if we decided to show it
+  if (showTrue) {
+    const truePos = Math.floor(Math.random() * (n + 1)) + 1;
+    const pos = truePos - 1;
+    
+    datasets.splice(pos, 0, {
       data: trueData,
       index: truePos,
       isTrue: true
     });
+    
+    // Reindex to ensure sequential indices
+    datasets.forEach((dataset, idx) => {
+      dataset.index = idx + 1;
+    });
+    
+    console.log(`True data in position ${truePos}`);
   }
   
   return datasets;

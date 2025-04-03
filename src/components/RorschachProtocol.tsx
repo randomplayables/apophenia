@@ -9,17 +9,17 @@ interface RorschachProtocolProps {
 }
 
 const RorschachProtocol: React.FC<RorschachProtocolProps> = ({ config, onContinue }) => {
-  const [datasets, setDatasets] = useState(generateRorschachData(config));
+  const [datasets, setDatasets] = useState(generateRorschachData(config, 0.1));
+
+// Regenerate datasets when config changes
+useEffect(() => {
+  setDatasets(generateRorschachData(config, 0.1));
+}, [config]);
+
+const regenerateData = () => {
+  setDatasets(generateRorschachData(config, 0.1));
+};
   const [showInfo, setShowInfo] = useState(true);
-
-  // Regenerate datasets when config changes
-  useEffect(() => {
-    setDatasets(generateRorschachData(config));
-  }, [config]);
-
-  const regenerateData = () => {
-    setDatasets(generateRorschachData(config));
-  };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 max-w-6xl mx-auto">
@@ -29,8 +29,9 @@ const RorschachProtocol: React.FC<RorschachProtocolProps> = ({ config, onContinu
         <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <h3 className="font-bold text-lg mb-2">How to use the Rorschach Protocol</h3>
           <p className="mb-2">
-            The Rorschach protocol helps you calibrate your perception of random data. All plots are generated 
-            from random data - try to notice the patterns that appear just by chance.
+          The Rorschach protocol helps you calibrate your perception of random data. These plots primarily show 
+          randomized data - try to notice the patterns that appear just by chance. Occasionally, real data might 
+          be shown among the plots.
           </p>
           <p className="mb-2">
             Look for features that stand out to you. Are there clusters? Outliers? Trends? These can all appear 
