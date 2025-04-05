@@ -6,9 +6,10 @@ interface PlotGridProps {
   datasets: PlotData[];
   onSelect: (index: number) => void;
   selectedIndex?: number | null;
+  confirmedSelection?: { index: number, correct: boolean } | null;
 }
 
-const PlotGrid: React.FC<PlotGridProps> = ({ datasets, onSelect, selectedIndex = null }) => {
+const PlotGrid: React.FC<PlotGridProps> = ({ datasets, onSelect, selectedIndex = null, confirmedSelection = null }) => {
   const [gridCols, setGridCols] = useState(3);
 
   // Adjust grid columns based on number of datasets
@@ -29,51 +30,56 @@ const PlotGrid: React.FC<PlotGridProps> = ({ datasets, onSelect, selectedIndex =
         gridTemplateColumns: `repeat(${gridCols}, 1fr)` 
       }}
     >
-      {datasets.map((dataset) => (
-        <div 
-          key={dataset.index}
-          className={`border rounded-lg overflow-hidden relative cursor-pointer ${
-            selectedIndex === dataset.index ? 'border-4 border-blue-500' : 'hover:border-gray-400'
-          }`}
-          onClick={() => onSelect(dataset.index)}
-        >
-          <div className="absolute top-2 left-2 z-10 bg-white bg-opacity-80 px-2 py-1 rounded font-bold">
-            {dataset.index}
-          </div>
-          <Plot
-            data={[
-              {
-                x: dataset.data.map(point => point.x),
-                y: dataset.data.map(point => point.y),
-                type: 'scatter',
-                mode: 'markers',
-                marker: { 
-                  color: 'rgba(31, 119, 180, 0.8)',
-                  size: 6
+      {datasets.map((dataset) => {
+        const isSelected = selectedIndex === dataset.index;
+        const isConfirmed = confirmedSelection && confirmedSelection.index === dataset.index;
+        const borderClass = isConfirmed
+          ? (confirmedSelection!.correct ? 'border-4 border-green-500' : 'border-4 border-red-500')
+          : (isSelected ? 'border-4 border-blue-500' : 'hover:border-gray-400');
+        return (
+          <div 
+            key={dataset.index}
+            className={`border rounded-lg overflow-hidden relative cursor-pointer ${borderClass}`}
+            onClick={() => { if (!confirmedSelection) onSelect(dataset.index); }}
+          >
+            <div className="absolute top-2 left-2 z-10 bg-white bg-opacity-80 px-2 py-1 rounded font-bold">
+              {dataset.index}
+            </div>
+            <Plot
+              data={[
+                {
+                  x: dataset.data.map(point => point.x),
+                  y: dataset.data.map(point => point.y),
+                  type: 'scatter',
+                  mode: 'markers',
+                  marker: { 
+                    color: 'rgba(31, 119, 180, 0.8)',
+                    size: 6
+                  }
                 }
-              }
-            ]}
-            layout={{
-              margin: { t: 10, r: 10, b: 40, l: 40 },
-              height: 250,
-              width: 250,
-              showlegend: false,
-              xaxis: {
-                title: 'X',
-                zeroline: false
-              },
-              yaxis: {
-                title: 'Y',
-                zeroline: false
-              }
-            }}
-            config={{
-              displayModeBar: false,
-              responsive: true
-            }}
-          />
-        </div>
-      ))}
+              ]}
+              layout={{
+                margin: { t: 10, r: 10, b: 40, l: 40 },
+                height: 250,
+                width: 250,
+                showlegend: false,
+                xaxis: {
+                  title: 'X',
+                  zeroline: false
+                },
+                yaxis: {
+                  title: 'Y',
+                  zeroline: false
+                }
+              }}
+              config={{
+                displayModeBar: false,
+                responsive: true
+              }}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 };

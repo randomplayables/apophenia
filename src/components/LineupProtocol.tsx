@@ -22,19 +22,20 @@ const LineupProtocol: React.FC<LineupProtocolProps> = ({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState(true);
 
-  // Regenerate datasets when config or truePos changes
+  // Regenerate datasets when config, truePos, or noiseLevel changes
   useEffect(() => {
     setDatasets(generateLineupData(config, truePos, noiseLevel));
     setSelectedIndex(null);
   }, [config, truePos, noiseLevel]);
 
+  // Modified selection handler:
+  // First click selects the plot; second click (on the same plot) confirms it.
   const handleSelect = (index: number) => {
-    setSelectedIndex(index);
-  };
-
-  const handleSubmit = () => {
-    if (selectedIndex !== null) {
-      onSelection(selectedIndex);
+    if (selectedIndex === index) {
+      // Confirm the selection if clicked again
+      onSelection(index);
+    } else {
+      setSelectedIndex(index);
     }
   };
 
@@ -55,7 +56,7 @@ const LineupProtocol: React.FC<LineupProtocolProps> = ({
           </p>
           <p className="mb-2">
             Your task is to identify which plot contains the real data pattern. Click on a plot to select it,
-            then click "Submit Selection" to confirm.
+            then click the same plot again to confirm your selection.
           </p>
           <p>
             Each time you correctly identify the pattern, the difficulty increases!
@@ -76,23 +77,17 @@ const LineupProtocol: React.FC<LineupProtocolProps> = ({
         selectedIndex={selectedIndex} 
       />
       
-      <div className="flex justify-center mt-6 space-x-4">
-        <button 
-          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-          onClick={handleSubmit}
-          disabled={selectedIndex === null}
-        >
-          Submit Selection
-        </button>
-        {!showInfo && (
+      {/* Removed the separate "Submit Selection" button */}
+      {!showInfo && (
+        <div className="flex justify-center mt-6">
           <button 
             className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => setShowInfo(true)}
           >
             Show Info
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
