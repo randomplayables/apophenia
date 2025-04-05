@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { GameConfig } from '../types';
+import { GameConfig, PlotData } from '../types';
 import { generateLineupData } from '../utils/dataGenerator';
 import PlotGrid from './PlotGrid';
 
@@ -9,6 +9,7 @@ interface LineupProtocolProps {
   round: number;
   noiseLevel: number;
   onSelection: (position: number) => void;
+  onLineupStart?: (round: number, noiseLevel: number, truePos: number, datasets: PlotData[]) => void;
 }
 
 const LineupProtocol: React.FC<LineupProtocolProps> = ({ 
@@ -16,17 +17,22 @@ const LineupProtocol: React.FC<LineupProtocolProps> = ({
   truePos, 
   round,
   noiseLevel,
-  onSelection 
+  onSelection,
+  onLineupStart
 }) => {
   const [datasets, setDatasets] = useState(generateLineupData(config, truePos, noiseLevel));
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState(true);
 
-  // Regenerate datasets when config, truePos, or noiseLevel changes
+  // Record the start of a new lineup round when datasets change
   useEffect(() => {
-    setDatasets(generateLineupData(config, truePos, noiseLevel));
+    const newDatasets = generateLineupData(config, truePos, noiseLevel);
+    setDatasets(newDatasets);
+    if (onLineupStart) {
+      onLineupStart(round, noiseLevel, truePos, newDatasets);
+    }
     setSelectedIndex(null);
-  }, [config, truePos, noiseLevel]);
+  }, [config, truePos, noiseLevel, round]);
 
   // Modified selection handler:
   // First click selects the plot; second click (on the same plot) confirms it.

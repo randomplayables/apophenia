@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import GameSetup from './components/GameSetup.tsx'
 import RorschachProtocol from './components/RorschachProtocol.tsx'
@@ -6,6 +6,7 @@ import LineupProtocol from './components/LineupProtocol.tsx'
 import GameResults from './components/GameResults.tsx'
 import { GameConfig, GameState, Protocol } from './types.ts'
 import { updateNoiseLevel } from './utils/dataGenerator.ts'
+import { useApopheniaData } from './hooks/useApopheniaData.tsx'
 
 function App() {
   const [gameState, setGameState] = useState<GameState>({
@@ -18,8 +19,23 @@ function App() {
     currentTruePos: null
   })
 
+  // Initialize our data tracking hook
+  const { 
+    sessionData,
+    recordSetup,
+    startRorschachSession,
+    recordRorschachRegenerate,
+    endRorschachSession,
+    startLineupRound,
+    recordLineupSelection,
+    recordGameEnd
+  } = useApopheniaData();
+
   const startGame = (config: GameConfig) => {
     const initialNoiseLevel = config.funcConfig?.initialNoiseLevel || 0.5;
+    
+    // Record the setup data
+    recordSetup(config);
     
     setGameState({
       ...gameState,
@@ -39,16 +55,26 @@ function App() {
   }
 
   const skipRorschach = () => {
+    // If we're currently in Rorschach mode, record the end
+    if (gameState.stage === 'rorschach') {
+      endRorschachSession();
+    }
+    
+    const truePos = Math.floor(Math.random() * gameState.config!.n) + 1;
+    
     setGameState({
       ...gameState,
       stage: 'lineup',
       protocol: 'lineup',
-      currentTruePos: Math.floor(Math.random() * gameState.config!.n) + 1
+      currentTruePos: truePos
     })
   }
 
   const handleSelection = (selectedPos: number) => {
     const isCorrect = selectedPos === gameState.currentTruePos
+    
+    // Record the user's selection
+    recordLineupSelection(selectedPos, isCorrect);
     
     if (isCorrect) {
       // Player got it right, increase difficulty
@@ -72,6 +98,9 @@ function App() {
         stage: 'results',
         roundsPlayed: gameState.roundsPlayed + 1
       })
+      
+      // Record the end of the game
+      recordGameEnd(gameState.score, gameState.currentNoiseLevel);
     }
   }
 
@@ -86,6 +115,15 @@ function App() {
       currentTruePos: null
     })
   }
+
+  useEffect(() => {
+    // Debug logging for development - helps verify data collection
+    console.log('Current session data:', sessionData);
+    
+    // Optional - log detailed state changes only when they happen
+    console.log('Game stage:', gameState.stage);
+    console.log('Round data:', sessionData.lineupData.rounds);
+  }, [sessionData, gameState.stage]);
 
   return (
     <div className="container mx-auto p-4">
@@ -122,7 +160,9 @@ function App() {
       {gameState.stage === 'rorschach' && gameState.config && (
         <RorschachProtocol 
           config={gameState.config} 
-          onContinue={skipRorschach} 
+          onContinue={skipRorschach}
+          onRorschachStart={startRorschachSession}
+          onRorschachRegenerate={recordRorschachRegenerate}
         />
       )}
       
@@ -133,6 +173,7 @@ function App() {
           round={gameState.roundsPlayed + 1}
           noiseLevel={gameState.currentNoiseLevel}
           onSelection={handleSelection}
+          onLineupStart={startLineupRound}
         />
       )}
       

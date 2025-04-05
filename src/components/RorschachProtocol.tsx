@@ -1,25 +1,38 @@
 import { useState, useEffect } from 'react';
-import { GameConfig } from '../types';
+import { GameConfig, PlotData } from '../types';
 import { generateRorschachData } from '../utils/dataGenerator';
 import PlotGrid from './PlotGrid';
 
 interface RorschachProtocolProps {
   config: GameConfig;
   onContinue: () => void;
+  onRorschachStart?: (datasets: PlotData[]) => void;
+  onRorschachRegenerate?: (datasets: PlotData[]) => void;
 }
 
-const RorschachProtocol: React.FC<RorschachProtocolProps> = ({ config, onContinue }) => {
-  const [datasets, setDatasets] = useState(generateRorschachData(config, 0.1));
-
-// Regenerate datasets when config changes
-useEffect(() => {
-  setDatasets(generateRorschachData(config, 0.1));
-}, [config]);
-
-const regenerateData = () => {
-  setDatasets(generateRorschachData(config, 0.1));
-};
-  const [showInfo, setShowInfo] = useState(true);
+  const RorschachProtocol: React.FC<RorschachProtocolProps> = ({
+    config,
+    onContinue,
+    onRorschachStart,
+    onRorschachRegenerate
+  }) => {
+    const [datasets, setDatasets] = useState(generateRorschachData(config, 0.1));
+    const [showInfo, setShowInfo] = useState(true);
+  
+    // Record the start of the Rorschach session when the component mounts
+    useEffect(() => {
+      if (onRorschachStart) {
+        onRorschachStart(datasets);
+      }
+    }, []);
+  
+    const regenerateData = () => {
+      const newDatasets = generateRorschachData(config, 0.1);
+      setDatasets(newDatasets);
+      if (onRorschachRegenerate) {
+        onRorschachRegenerate(newDatasets);
+      }
+    };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 max-w-6xl mx-auto">
