@@ -20,7 +20,7 @@ const LineupProtocol: React.FC<LineupProtocolProps> = ({
   onSelection,
   onLineupStart
 }) => {
-  const [datasets, setDatasets] = useState(generateLineupData(config, truePos, noiseLevel));
+  const [datasets, setDatasets] = useState<PlotData[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState(true);
 
@@ -33,6 +33,7 @@ const LineupProtocol: React.FC<LineupProtocolProps> = ({
     }
     setSelectedIndex(null);
   }, [config, truePos, noiseLevel, round]);
+
 
   // Modified selection handler:
   // First click selects the plot; second click (on the same plot) confirms it.
