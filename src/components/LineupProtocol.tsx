@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { GameConfig, PlotData } from '../types';
 import { generateLineupData } from '../utils/dataGenerator';
 import PlotGrid from './PlotGrid';
@@ -23,17 +23,29 @@ const LineupProtocol: React.FC<LineupProtocolProps> = ({
   const [datasets, setDatasets] = useState<PlotData[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState(true);
+  
+  // Add this ref to track if we've already initialized this round
+  const initializedRoundRef = useRef<{round: number, noiseLevel: number}>({round: -1, noiseLevel: -1});
 
   // Record the start of a new lineup round when datasets change
   useEffect(() => {
-    const newDatasets = generateLineupData(config, truePos, noiseLevel);
-    setDatasets(newDatasets);
-    if (onLineupStart) {
-      onLineupStart(round, noiseLevel, truePos, newDatasets);
+    // Only initialize if this is a new round or noise level
+    const roundChanged = initializedRoundRef.current.round !== round;
+    const noiseLevelChanged = initializedRoundRef.current.noiseLevel !== noiseLevel;
+    
+    if (roundChanged || noiseLevelChanged) {
+      const newDatasets = generateLineupData(config, truePos, noiseLevel);
+      setDatasets(newDatasets);
+      
+      if (onLineupStart) {
+        onLineupStart(round, noiseLevel, truePos, newDatasets);
+      }
+      
+      // Mark this round as initialized
+      initializedRoundRef.current = {round, noiseLevel};
+      setSelectedIndex(null);
     }
-    setSelectedIndex(null);
-  }, [config, truePos, noiseLevel, round]);
-
+  }, [config, truePos, noiseLevel, round, onLineupStart]);
 
   // Modified selection handler:
   // First click selects the plot; second click (on the same plot) confirms it.

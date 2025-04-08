@@ -28,7 +28,8 @@ function App() {
     endRorschachSession,
     startLineupRound,
     recordLineupSelection,
-    recordGameEnd
+    recordGameEnd,
+    resetSessionData
   } = useApopheniaData();
 
   const startGame = (config: GameConfig) => {
@@ -114,6 +115,9 @@ function App() {
       currentNoiseLevel: 0.5,
       currentTruePos: null
     })
+
+    // Reset the session data when restarting the game
+    resetSessionData();
   }
 
   useEffect(() => {

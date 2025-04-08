@@ -16,35 +16,41 @@ const generateUUID = () => {
   });
 };
 
-export const useApopheniaData = () => {
-  // Generate a unique session ID
-  const sessionId = useRef(generateUUID());
-  
+export const useApopheniaData = () => {  
   // Get user agent info
   const userAgent = typeof window !== 'undefined' ? window.navigator.userAgent : '';
   
   // Initialize the session data
-  const [sessionData, setSessionData] = useState<ApopheniaSessionData>({
-    sessionId: sessionId.current,
-    setupData: null as unknown as GameSetupData, // Will be set when game starts
-    rorschachData: {
-      sessionsCount: 0,
-      totalViewTime: 0,
-      regenerateCount: 0,
-      datasetViewed: []
-    },
-    lineupData: {
-      rounds: [],
-      finalScore: 0,
-      finalNoiseLevel: 0,
-      roundsCompleted: 0
-    },
-    startTime: Date.now(),
-    endTime: 0,
-    userAgent,
-    version: '1.0.0' // App version
-  });
-  
+  const [sessionData, setSessionData] = useState<ApopheniaSessionData>(createInitialSessionData());
+  // Function to create a fresh session data object
+  function createInitialSessionData(): ApopheniaSessionData {
+    return {
+      sessionId: generateUUID(), // Generate a new UUID for each session
+      setupData: null as unknown as GameSetupData, // Will be set when game starts
+      rorschachData: {
+        sessionsCount: 0,
+        totalViewTime: 0,
+        regenerateCount: 0,
+        datasetViewed: []
+      },
+      lineupData: {
+        rounds: [],
+        finalScore: 0,
+        finalNoiseLevel: 0,
+        roundsCompleted: 0
+      },
+      startTime: Date.now(),
+      endTime: 0,
+      userAgent,
+      version: '1.0.0' // App version
+    };
+  }
+
+    // Reset session data (new function)
+    const resetSessionData = () => {
+      setSessionData(createInitialSessionData());
+    };
+
   // Track Rorschach state
   const rorschachStartTime = useRef<number | null>(null);
   
@@ -261,6 +267,7 @@ export const useApopheniaData = () => {
     startLineupRound,
     recordLineupSelection,
     recordGameEnd,
-    saveDataToServer
+    saveDataToServer,
+    resetSessionData 
   };
 };
