@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { GameConfig, PlotData } from '../types';
 import { generateRorschachData } from '../utils/dataGenerator';
 import PlotGrid from './PlotGrid';
@@ -10,29 +10,34 @@ interface RorschachProtocolProps {
   onRorschachRegenerate?: (datasets: PlotData[]) => void;
 }
 
-  const RorschachProtocol: React.FC<RorschachProtocolProps> = ({
-    config,
-    onContinue,
-    onRorschachStart,
-    onRorschachRegenerate
-  }) => {
-    const [datasets, setDatasets] = useState(generateRorschachData(config, 0.1));
-    const [showInfo, setShowInfo] = useState(true);
+const RorschachProtocol: React.FC<RorschachProtocolProps> = ({
+  config,
+  onContinue,
+  onRorschachStart,
+  onRorschachRegenerate
+}) => {
+  const [datasets, setDatasets] = useState(generateRorschachData(config, 0.1));
+  const [showInfo, setShowInfo] = useState(true);
   
-    // Record the start of the Rorschach session when the component mounts
-    useEffect(() => {
-      if (onRorschachStart) {
-        onRorschachStart(datasets);
-      }
-    }, []);
-  
-    const regenerateData = () => {
-      const newDatasets = generateRorschachData(config, 0.1);
-      setDatasets(newDatasets);
-      if (onRorschachRegenerate) {
-        onRorschachRegenerate(newDatasets);
-      }
-    };
+  // Add this ref to track if we've already initialized
+  const initializedRef = useRef(false);
+
+  // Record the start of the Rorschach session when the component mounts
+  useEffect(() => {
+    // Only call onRorschachStart once
+    if (!initializedRef.current && onRorschachStart) {
+      onRorschachStart(datasets);
+      initializedRef.current = true;
+    }
+  }, [datasets, onRorschachStart]);
+
+  const regenerateData = () => {
+    const newDatasets = generateRorschachData(config, 0.1);
+    setDatasets(newDatasets);
+    if (onRorschachRegenerate) {
+      onRorschachRegenerate(newDatasets);
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 max-w-6xl mx-auto">
