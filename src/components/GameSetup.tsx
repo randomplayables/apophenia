@@ -61,8 +61,6 @@ function updateNoiseLevel(currentLevel) {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Game Setup</h2>
-      
       <form onSubmit={handleSubmit}>
         <div className="flex space-x-4 mb-4">
           <div className="w-1/2">
