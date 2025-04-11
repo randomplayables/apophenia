@@ -60,29 +60,29 @@ function updateNoiseLevel(currentLevel) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
+    <div className="bg-white rounded-lg shadow-md p-8 max-w-2xl mx-auto">
       <form onSubmit={handleSubmit}>
-        <div className="flex space-x-4 mb-4">
-          <div className="w-1/2">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
+        <div className="flex space-x-6 mb-8 p-8">
+          <div className="w-1/2 p-8">
+            <label className="block text-gray-700 text-sm font-bold mb-3 p-8">
               Number of plots (n)
             </label>
             <input
               type="number"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow appearance-none border border-gray-300 rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500 transition-colors"
               value={n}
               min={4}
               max={100}
               onChange={(e) => setN(parseInt(e.target.value))}
             />
           </div>
-          <div className="w-1/2">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
+          <div className="w-1/2 p-8">
+            <label className="block text-gray-700 text-sm font-bold mb-3 p-8">
               Data points per plot (r)
             </label>
             <input
               type="number"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow appearance-none border border-gray-300 rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500 transition-colors"
               value={r}
               min={2}
               max={1000}
@@ -90,30 +90,31 @@ function updateNoiseLevel(currentLevel) {
             />
           </div>
         </div>
-        <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
+        <div className="my-6">&nbsp;</div>
+        <div className="m-8 p-8">
+          <label className="block text-gray-700 text-sm font-bold mb-3 p-8">
             Initial Difficulty (Noise Level)
           </label>
           <input
             type="range"
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none border cursor-pointer"
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
             min={0.1}
             max={3}
             step={0.1}
             value={initialNoiseLevel}
             onChange={(e) => setInitialNoiseLevel(parseFloat(e.target.value))}
           />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>Easy (0.1)</span>
+          <div className="flex justify-between text-xs text-gray-600 mt-2">
+            <span>(0.1)</span>
             <span>Value: {initialNoiseLevel.toFixed(1)}</span>
-            <span>Hard (3.0)</span>
+            <span>(3.0)</span>
           </div>
         </div>
-        
-        <div className="mb-6">
+        <div className="my-6">&nbsp;</div>
+        <div className="flex justify-between items-center mb-8">
           <button
             type="button"
-            className="text-blue-600 hover:text-blue-800 flex items-center text-sm font-medium"
+            className="text-blue-600 hover:text-blue-800 flex items-center text-sm font-medium transition-colors"
             onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
           >
             {showAdvancedOptions ? '– Hide Advanced Options' : '+ Show Advanced Options'} 
@@ -158,11 +159,10 @@ function updateNoiseLevel(currentLevel) {
             </div>
           </div>
         )}
-        
         <div className="flex justify-center">
           <button
             type="submit"
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors"
           >
             Start Game
           </button>
