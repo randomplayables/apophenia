@@ -1,3 +1,16 @@
+/**
+ * GameSetup component for Apophenia game.
+ * 
+ * Provides a form interface for configuring the game parameters before starting. 
+ * Allows users to set the number of plots, data points per plot, and initial noise level.
+ * Also includes advanced options for customizing the data generation function and 
+ * difficulty progression through custom JavaScript code.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {Function} props.onSubmit - Callback function triggered when the form is submitted with the game configuration
+ * @returns {JSX.Element} Rendered form for game configuration with basic and advanced options
+ */
 import { useState } from 'react';
 import { GameConfig } from '../types';
 

@@ -1,3 +1,30 @@
+/**
+ * Main App component for Apophenia game.
+ * 
+ * This component manages the overall game state and flow between different stages:
+ * 1. Setup - Configure game parameters
+ * 2. Protocol Selection - Choose between Rorschach (practice) or Lineup (game)
+ * 3. Rorschach Protocol - View randomized data to calibrate perception
+ * 4. Lineup Protocol - Identify the true pattern among randomized plots
+ * 5. Results - View final score and game statistics
+ * 
+ * The game is based on visual inference principles from the field of statistical graphics,
+ * as described in:
+ *   H. Wickham, D. Cook, H. Hofmann and A. Buja, "Graphical inference for infovis," in IEEE
+ *   Transactions on Visualization and Computer Graphics, vol. 16, no. 6, pp. 973-979, Nov.-Dec.
+ *   2010, doi: 10.1109/TVCG.2010.161.
+ * 
+ *   Buja A, Cook D, Hofmann H, Lawrence M, Lee E, Swayne DF, Wickham H (2009). “Statistical Inference
+ *   for Exploratory Data Analysis and Model Diagnostics.” Royal Society Philosophical Transactions A,
+ *   367 (1906), 4361-4383. doi:10.1098/rsta.2009.0120.
+ * 
+ * These papers introduce lineup and Rorschach protocols as formal statistical methods
+ * for graphical inference, which this game adapts into an interactive experience that
+ * measures a player's ability to detect signal from noise.
+ * 
+ * @component
+ * @returns {JSX.Element} Complete game interface that adapts based on current game stage
+ */
 import { useEffect, useState } from 'react'
 import './App.css'
 import GameSetup from './components/GameSetup.tsx'
@@ -32,6 +59,12 @@ function App() {
     resetSessionData
   } = useApopheniaData();
 
+  /**
+   * Starts a new game with the provided configuration.
+   * Records setup data and transitions to protocol selection stage.
+   * 
+   * @param {GameConfig} config - Game configuration from setup form
+   */
   const startGame = (config: GameConfig) => {
     const initialNoiseLevel = config.funcConfig?.initialNoiseLevel || 0.5;
     
@@ -46,6 +79,12 @@ function App() {
     })
   }
 
+  /**
+   * Sets the game protocol (Rorschach or Lineup) and prepares the appropriate stage.
+   * For Lineup protocol, also generates the initial true position randomly.
+   * 
+   * @param {Protocol} protocol - Selected protocol ('rorschach' or 'lineup')
+   */
   const selectProtocol = (protocol: Protocol) => {
     setGameState({
       ...gameState,
@@ -55,6 +94,10 @@ function App() {
     })
   }
 
+  /**
+   * Transitions from Rorschach protocol to Lineup protocol.
+   * Records the end of Rorschach session if applicable.
+   */
   const skipRorschach = () => {
     // If we're currently in Rorschach mode, record the end
     if (gameState.stage === 'rorschach') {
@@ -71,6 +114,13 @@ function App() {
     })
   }
 
+  /**
+   * Handles player selection in the Lineup protocol.
+   * If correct, increases difficulty and continues to next round.
+   * If incorrect, ends the game and shows results.
+   * 
+   * @param {number} selectedPos - Position index selected by the player
+   */
   const handleSelection = (selectedPos: number) => {
     const isCorrect = selectedPos === gameState.currentTruePos
     
@@ -105,6 +155,9 @@ function App() {
     }
   }
 
+  /**
+   * Resets the game to initial state and starts a new session.
+   */
   const restartGame = () => {
     setGameState({
       stage: 'setup',

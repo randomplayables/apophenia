@@ -1,3 +1,23 @@
+/**
+ * PlotGrid component for Apophenia game.
+ * 
+ * Renders a responsive grid of scatter plots using Plotly.js. Each plot displays
+ * a dataset of x-y points and handles user interaction through clicks. The component
+ * visually indicates selected and confirmed plots through colored borders.
+ * 
+ * The grid layout automatically adjusts based on the number of plots, organizing them
+ * into a 2x2, 3x3, or 4x4 grid as appropriate.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {PlotData[]} props.datasets - Array of data objects containing the points to plot
+ * @param {Function} props.onSelect - Callback function triggered when a plot is clicked
+ * @param {number|null} [props.selectedIndex] - Optional index of the currently selected plot
+ * @param {Object|null} [props.confirmedSelection] - Optional object containing the confirmed selection info
+ * @param {number} props.confirmedSelection.index - Index of the confirmed plot
+ * @param {boolean} props.confirmedSelection.correct - Whether the confirmed selection was correct
+ * @returns {JSX.Element} Rendered grid of scatter plots
+ */
 import { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
 import { PlotData } from '../types';

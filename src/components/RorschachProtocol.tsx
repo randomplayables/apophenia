@@ -1,3 +1,22 @@
+/**
+ * RorschachProtocol component for Apophenia game.
+ * 
+ * Implements the practice/calibration phase of the game where players are shown 
+ * multiple plots of primarily random data to help them recognize what random patterns
+ * look like before attempting the main lineup challenge. This helps players calibrate
+ * their perception to avoid seeing false patterns in noise (apophenia).
+ * 
+ * Players can regenerate new sets of plots to view more examples or continue to
+ * the main game when ready.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {GameConfig} props.config - Configuration settings for the game
+ * @param {Function} props.onContinue - Callback function triggered when the user clicks continue
+ * @param {Function} [props.onRorschachStart] - Optional callback function triggered when Rorschach phase begins
+ * @param {Function} [props.onRorschachRegenerate] - Optional callback function triggered when new plots are generated
+ * @returns {JSX.Element} Rendered interface showing random data plots with explanation and controls
+ */
 import { useState, useEffect, useRef } from 'react';
 import { GameConfig, PlotData } from '../types';
 import { generateRorschachData } from '../utils/dataGenerator';

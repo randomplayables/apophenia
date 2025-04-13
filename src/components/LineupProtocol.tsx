@@ -1,3 +1,24 @@
+
+/**
+ * LineupProtocol component for Apophenia game.
+ * 
+ * Implements the main game mechanic where players must identify which plot contains
+ * the true data pattern among multiple plots showing random data. The component
+ * handles rendering the plots, tracking user selections, and managing round state.
+ * 
+ * The difficulty increases with each correct selection by increasing the noise level,
+ * making it progressively harder to distinguish the true pattern from random data.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {GameConfig} props.config - Configuration settings for the game
+ * @param {number} props.truePos - Position index (1-based) of the plot containing the true pattern
+ * @param {number} props.round - Current round number
+ * @param {number} props.noiseLevel - Current noise level (difficulty)
+ * @param {Function} props.onSelection - Callback function triggered when the user confirms their selection
+ * @param {Function} [props.onLineupStart] - Optional callback function triggered when a new lineup round begins
+ * @returns {JSX.Element} Rendered game interface with grid of plots for the user to select from
+ */
 import { useState, useEffect, useRef } from 'react';
 import { GameConfig, PlotData } from '../types';
 import { generateLineupData } from '../utils/dataGenerator';

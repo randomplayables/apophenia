@@ -1,3 +1,25 @@
+/**
+ * useApopheniaData hook for Apophenia game.
+ * 
+ * Custom hook that manages all data collection and session tracking for the game.
+ * It records detailed information about the game setup, player interactions during
+ * the Rorschach protocol (practice phase), lineup rounds (main game), and final results.
+ * 
+ * This data can be used for research purposes to study how players perceive patterns
+ * in randomized data versus actual patterns with varying levels of noise.
+ * 
+ * @returns {Object} Collection of functions and data for tracking game sessions
+ * @returns {ApopheniaSessionData} returns.sessionData - Current session data object
+ * @returns {Function} returns.recordSetup - Function to record initial game configuration
+ * @returns {Function} returns.startRorschachSession - Function to record start of Rorschach phase
+ * @returns {Function} returns.recordRorschachRegenerate - Function to record when new Rorschach plots are generated
+ * @returns {Function} returns.endRorschachSession - Function to record end of Rorschach phase
+ * @returns {Function} returns.startLineupRound - Function to record start of a lineup round
+ * @returns {Function} returns.recordLineupSelection - Function to record player selection in a round
+ * @returns {Function} returns.recordGameEnd - Function to record final game results
+ * @returns {Function} returns.saveDataToServer - Function to save session data to server (placeholder)
+ * @returns {Function} returns.resetSessionData - Function to reset the session data for a new game
+ */
 import { useState, useRef } from 'react';
 
 import { 
