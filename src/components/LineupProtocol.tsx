@@ -1,24 +1,3 @@
-
-/**
- * LineupProtocol component for Apophenia game.
- * 
- * Implements the main game mechanic where players must identify which plot contains
- * the true data pattern among multiple plots showing random data. The component
- * handles rendering the plots, tracking user selections, and managing round state.
- * 
- * The difficulty increases with each correct selection by increasing the noise level,
- * making it progressively harder to distinguish the true pattern from random data.
- * 
- * @component
- * @param {Object} props - Component props
- * @param {GameConfig} props.config - Configuration settings for the game
- * @param {number} props.truePos - Position index (1-based) of the plot containing the true pattern
- * @param {number} props.round - Current round number
- * @param {number} props.noiseLevel - Current noise level (difficulty)
- * @param {Function} props.onSelection - Callback function triggered when the user confirms their selection
- * @param {Function} [props.onLineupStart] - Optional callback function triggered when a new lineup round begins
- * @returns {JSX.Element} Rendered game interface with grid of plots for the user to select from
- */
 import { useState, useEffect, useRef } from 'react';
 import { GameConfig, PlotData } from '../types';
 import { generateLineupData } from '../utils/dataGenerator';
@@ -29,7 +8,7 @@ interface LineupProtocolProps {
   truePos: number;
   round: number;
   noiseLevel: number;
-  onSelection: (position: number) => void;
+  onSelection: (position: number, datasets: PlotData[]) => void;
   onLineupStart?: (round: number, noiseLevel: number, truePos: number, datasets: PlotData[]) => void;
 }
 
@@ -45,12 +24,11 @@ const LineupProtocol: React.FC<LineupProtocolProps> = ({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState(true);
   
-  // Add this ref to track if we've already initialized this round
+  // This ref now tracks both round and noise level to be more robust
   const initializedRoundRef = useRef<{round: number, noiseLevel: number}>({round: -1, noiseLevel: -1});
 
-  // Record the start of a new lineup round when datasets change
+  // This effect now has a more robust check to prevent re-running
   useEffect(() => {
-    // Only initialize if this is a new round or noise level
     const roundChanged = initializedRoundRef.current.round !== round;
     const noiseLevelChanged = initializedRoundRef.current.noiseLevel !== noiseLevel;
     
@@ -62,7 +40,7 @@ const LineupProtocol: React.FC<LineupProtocolProps> = ({
         onLineupStart(round, noiseLevel, truePos, newDatasets);
       }
       
-      // Mark this round as initialized
+      // Mark this combination of round and noiseLevel as initialized
       initializedRoundRef.current = {round, noiseLevel};
       setSelectedIndex(null);
     }
@@ -72,8 +50,8 @@ const LineupProtocol: React.FC<LineupProtocolProps> = ({
   // First click selects the plot; second click (on the same plot) confirms it.
   const handleSelect = (index: number) => {
     if (selectedIndex === index) {
-      // Confirm the selection if clicked again
-      onSelection(index);
+      // Confirm the selection if clicked again, pass datasets back
+      onSelection(index, datasets);
     } else {
       setSelectedIndex(index);
     }
@@ -117,7 +95,6 @@ const LineupProtocol: React.FC<LineupProtocolProps> = ({
         selectedIndex={selectedIndex} 
       />
       
-      {/* Removed the separate "Submit Selection" button */}
       {!showInfo && (
         <div className="flex justify-center mt-6">
           <button 

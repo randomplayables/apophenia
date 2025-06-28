@@ -1,31 +1,4 @@
-/**
- * Main App component for Apophenia game.
- * 
- * This component manages the overall game state and flow between different stages:
- * 1. Setup - Configure game parameters
- * 2. Protocol Selection - Choose between Rorschach (practice) or Lineup (game)
- * 3. Rorschach Protocol - View randomized data to calibrate perception
- * 4. Lineup Protocol - Identify the true pattern among randomized plots
- * 5. Results - View final score and game statistics
- * 
- * The game is based on visual inference principles from the field of statistical graphics,
- * as described in:
- *   H. Wickham, D. Cook, H. Hofmann and A. Buja, "Graphical inference for infovis," in IEEE
- *   Transactions on Visualization and Computer Graphics, vol. 16, no. 6, pp. 973-979, Nov.-Dec.
- *   2010, doi: 10.1109/TVCG.2010.161.
- * 
- *   Buja A, Cook D, Hofmann H, Lawrence M, Lee E, Swayne DF, Wickham H (2009). “Statistical Inference
- *   for Exploratory Data Analysis and Model Diagnostics.” Royal Society Philosophical Transactions A,
- *   367 (1906), 4361-4383. doi:10.1098/rsta.2009.0120.
- * 
- * These papers introduce lineup and Rorschach protocols as formal statistical methods
- * for graphical inference, which this game adapts into an interactive experience that
- * measures a player's ability to detect signal from noise.
- * 
- * @component
- * @returns {JSX.Element} Complete game interface that adapts based on current game stage
- */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import './App.css'
 import GameSetup from './components/GameSetup.tsx'
 import RorschachProtocol from './components/RorschachProtocol.tsx'
@@ -45,10 +18,12 @@ function App() {
     currentNoiseLevel: 0.5,
     currentTruePos: null
   })
+  
+  const appInitialized = useRef(false);
 
   // Initialize our data tracking hook
   const { 
-    sessionData,
+    initializeSession,
     recordSetup,
     startRorschachSession,
     recordRorschachRegenerate,
@@ -56,14 +31,23 @@ function App() {
     startLineupRound,
     recordLineupSelection,
     recordGameEnd,
-    resetSessionData
   } = useApopheniaData();
+
+  useEffect(() => {
+    // This effect now runs only once, even in React Strict Mode.
+    if (!appInitialized.current) {
+        initializeSession();
+        appInitialized.current = true;
+    }
+    // Debug logging to observe state changes without causing re-renders
+    console.log('Game stage:', gameState.stage);
+  }, [initializeSession, gameState.stage]);
+
 
   /**
    * Starts a new game with the provided configuration.
    * Records setup data and transitions to protocol selection stage.
-   * 
-   * @param {GameConfig} config - Game configuration from setup form
+   * * @param {GameConfig} config - Game configuration from setup form
    */
   const startGame = (config: GameConfig) => {
     const initialNoiseLevel = config.funcConfig?.initialNoiseLevel || 0.5;
@@ -82,8 +66,7 @@ function App() {
   /**
    * Sets the game protocol (Rorschach or Lineup) and prepares the appropriate stage.
    * For Lineup protocol, also generates the initial true position randomly.
-   * 
-   * @param {Protocol} protocol - Selected protocol ('rorschach' or 'lineup')
+   * * @param {Protocol} protocol - Selected protocol ('rorschach' or 'lineup')
    */
   const selectProtocol = (protocol: Protocol) => {
     setGameState({
@@ -118,14 +101,21 @@ function App() {
    * Handles player selection in the Lineup protocol.
    * If correct, increases difficulty and continues to next round.
    * If incorrect, ends the game and shows results.
-   * 
-   * @param {number} selectedPos - Position index selected by the player
+   * * @param {number} selectedPos - Position index selected by the player
+   * @param {PlotData[]} datasets - The datasets shown in the round
    */
-  const handleSelection = (selectedPos: number) => {
+  const handleSelection = (selectedPos: number, datasets: any[]) => {
     const isCorrect = selectedPos === gameState.currentTruePos
-    
-    // Record the user's selection
-    recordLineupSelection(selectedPos, isCorrect);
+
+    // Record the user's selection with all necessary context
+    recordLineupSelection(
+      gameState.roundsPlayed + 1,
+      gameState.currentNoiseLevel,
+      gameState.currentTruePos!,
+      datasets,
+      selectedPos,
+      isCorrect
+    );
     
     if (isCorrect) {
       // Player got it right, increase difficulty
@@ -169,18 +159,9 @@ function App() {
       currentTruePos: null
     })
 
-    // Reset the session data when restarting the game
-    resetSessionData();
+    // Re-initialize the session for the new game
+    initializeSession();
   }
-
-  useEffect(() => {
-    // Debug logging for development - helps verify data collection
-    console.log('Current session data:', sessionData);
-    
-    // Optional - log detailed state changes only when they happen
-    console.log('Game stage:', gameState.stage);
-    console.log('Round data:', sessionData.lineupData.rounds);
-  }, [sessionData, gameState.stage]);
 
   return (
     <div className="container mx-auto p-4">
