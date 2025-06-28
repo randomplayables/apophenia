@@ -27,15 +27,9 @@ import {
 import { initGameSession, saveGameData } from '../services/apiService'; // Import the new service
 
 export const useApopheniaData = () => {  
-  // This hook no longer manages the entire session object directly.
-  // It will now be responsible for preparing and sending data chunks.
-  
   const [, setGameSession] = useState<any>(null);
 
-  // Track Rorschach state
   const rorschachStartTime = useRef<number | null>(null);
-  
-  // Track Lineup state
   const lineupRoundStartTime = useRef<number | null>(null);
   
   const initializeSession = async () => {
@@ -44,7 +38,6 @@ export const useApopheniaData = () => {
     console.log("Apophenia session initialized:", session);
   };
 
-  // Record setup data
   const recordSetup = (config: GameConfig) => {
     const setupData: GameSetupData = {
       n: config.n,
@@ -57,7 +50,6 @@ export const useApopheniaData = () => {
     saveGameData('setup', setupData);
   };
   
-  // Record start of Rorschach session
   const startRorschachSession = (datasets: PlotData[]) => {
     rorschachStartTime.current = Date.now();
     const hasRealData = datasets.some(dataset => dataset.isTrue === true);
@@ -71,7 +63,6 @@ export const useApopheniaData = () => {
     saveGameData('rorschach', rorschachStartData);
   };
   
-  // Record regeneration of Rorschach plots
   const recordRorschachRegenerate = (datasets: PlotData[]) => {
     const hasRealData = datasets.some(dataset => dataset.isTrue === true);
     const regenerateData = {
@@ -83,7 +74,6 @@ export const useApopheniaData = () => {
     saveGameData('rorschach', regenerateData);
   };
   
-  // Record end of Rorschach session
   const endRorschachSession = () => {
     if (rorschachStartTime.current) {
       const duration = Date.now() - rorschachStartTime.current;
@@ -97,7 +87,6 @@ export const useApopheniaData = () => {
     }
   };
   
-  // Record start of a Lineup round
   const startLineupRound = (
     round: number, 
     noiseLevel: number, 
@@ -106,7 +95,6 @@ export const useApopheniaData = () => {
   ) => {
     lineupRoundStartTime.current = Date.now();
     
-    // For lineup, we still construct the round data but will send it on selection
     const lineupStartData = {
       event: 'start_round',
       round,
@@ -115,11 +103,10 @@ export const useApopheniaData = () => {
       datasets,
       timestamp: lineupRoundStartTime.current
     };
-    // Log start if needed, but the main data is sent on selection
+
     console.log("Lineup Round Started:", lineupStartData);
   };
   
-  // Record user selection in a Lineup round
   const recordLineupSelection = (
     round: number,
     noiseLevel: number,
@@ -148,7 +135,6 @@ export const useApopheniaData = () => {
     }
   };
   
-  // Record end of game
   const recordGameEnd = (score: number, finalNoiseLevel: number) => {
     const gameEndData = {
       finalScore: score,
