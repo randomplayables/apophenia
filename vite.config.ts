@@ -9,26 +9,26 @@ export default defineConfig(({ command, mode }) => {
   // Define the base server configuration object
   const serverConfig: {
     host: string;
-    allowedHosts?: string[]; // Make optional if not needed everywhere
+    allowedHosts: string[];
     proxy?: Record<string, string | ProxyOptions>;
   } = {
     host: '0.0.0.0',
-    allowedHosts: ['.loca.lt'], // You can add this back if you use localtunnel
+    allowedHosts: ['.loca.lt'],
   };
 
   // Only add the proxy object if we are NOT in production
   if (!isProduction) {
     serverConfig.proxy = {
       '/api': {
-        target: 'http://172.31.12.157:3000', // Make sure this target is correct for your setup
+        target: 'http://172.31.12.157:3000',
         changeOrigin: true,
-        rewrite: (path: string) => path.replace(/^\/api/, ''),
+        // The incorrect 'rewrite' line has been removed from this section.
       },
     };
   }
 
   const config = {
-    // The crucial change is ensuring tailwindcss() is included here
+    // The tailwindcss() plugin specific to this project is correctly kept here
     plugins: [react(), tailwindcss()], 
     server: serverConfig,
   };
