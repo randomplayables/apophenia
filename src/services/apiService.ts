@@ -4,7 +4,7 @@
  */
 
 const API_BASE_URL = import.meta.env.MODE === 'production'
-  ? 'https://randomplayables.com/api'
+  ? 'https://www.randomplayables.com/api'
   : '/api';
 
 console.log("Using API base URL:", API_BASE_URL);

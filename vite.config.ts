@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
 
   // Define the base server configuration object
@@ -27,18 +27,15 @@ export default defineConfig(({ command, mode }) => {
     };
   }
 
-  const config = {
+  const config: any = {
     // The tailwindcss() plugin specific to this project is correctly kept here
     plugins: [react(), tailwindcss()], 
     server: serverConfig,
   };
 
-  if (command === 'build') {
-    (config as any).build = {
-      esbuild: {
-        drop: ['console', 'debugger'],
-      },
-    };
+  // ✅ Put esbuild options at the top level (not under build)
+  if (isProduction) {
+    config.esbuild = { drop: ['console', 'debugger'] };
   }
   
   return config;
